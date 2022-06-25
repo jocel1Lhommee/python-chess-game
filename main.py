@@ -113,6 +113,38 @@ def getPromotion(WINDOW, fpsClock, FPS, isWhitePiece):
             fpsClock.tick(FPS)
 
 
+def continueGameChoice(WINDOW, fpsClock, FPS, result, colorIsWhite):
+    if colorIsWhite:
+        typeFirstLetter = "w"
+    else:
+        typeFirstLetter = "b"
+    font = p.font.Font('freesansbold.ttf', 32)
+    text = "Choisissez votre Promotion\n"\
+        "Tapez sur D pour choisir une Dame\n"\
+        "Tapez sur T pour choisir une Tour\n"\
+        "Tapez sur F pour choisir un Fou\n"\
+        "Tapez sur C pour choisir un Cavalier"
+    WINDOW.fill(BACKGROUND_COLOR)
+    blit_text(WINDOW, text, (X_POSITION, Y_POSITION), font, TEXT_COLOR)
+    while True:
+        # WINDOW.fill(BACKGROUND_COLOR)
+        #blit_text(WINDOW, text, (X_POSITION, Y_POSITION), font, TEXT_COLOR)
+        for event in p.event.get():
+            if event.type == p.QUIT:
+                p.quit()
+            elif event.type == p.KEYDOWN:
+                if event.key == p.K_d:
+                    return createPieceByType(typeFirstLetter+"Q")
+                if event.key == p.K_t:
+                    return createPieceByType(typeFirstLetter+"R")
+                if event.key == p.K_f:
+                    return createPieceByType(typeFirstLetter+"B")
+                if event.key == p.K_c:
+                    return createPieceByType(typeFirstLetter+"N")
+            p.display.update()
+            fpsClock.tick(FPS)
+
+
 def loadImages(SQUARE_SIZE):
     """Charge dans un dictionnaire Les images de pièces à la bonne taille
 
@@ -147,6 +179,7 @@ def game(WINDOW, fpsClock, FPS, IMAGES, humanColorIsWhite):
         # si c'est le tour de l'Humain|mettre humanTour à la place du True
         if True:
             for event in p.event.get():
+                move = None
                 if event.type == p.QUIT:
                     p.quit()
                 # si click gauche
@@ -173,7 +206,7 @@ def game(WINDOW, fpsClock, FPS, IMAGES, humanColorIsWhite):
                                     board.enPassant(
                                         board.selectedPosition, (row-1, col), (row, col))
                                 board.selectedPosition = None
-                                board.undoLog()
+                            move = True
                         else:
                             # on déselectionne la pièce sélectionée
                             board.selectedPosition = None
@@ -192,17 +225,34 @@ def game(WINDOW, fpsClock, FPS, IMAGES, humanColorIsWhite):
                             else:
                                 board.roque((row, col))
                                 board.selectedPosition = None
-                                board.undoLog()
+                            move = True
                         else:
                             if board.selectedPosition != (row, col):
                                 # on sélectionne la nouvelle pièce
                                 board.selectedPosition = (row, col)
                                 board.getAvailableMove(
                                     board.selectedPosition)
+                    # si bougé on vérifie échec et mat
+                    if move:
+                        print("Une pièce bougée")
+                        pat, colorIsWhite = patSituation(board)
+                        if pat:
+                            print("il y a pat:", end="")
+                            print(" et c'est la couleure blache:" +
+                                  str(colorIsWhite))
+                            checkmate = checkmateSituation(board, colorIsWhite)
+                            if checkmate:
+                                print("il y a échec et mat,en plus du pat")
+                                continueGameChoice(
+                                    WINDOW, fpsClock, FPS, "checkmate", colorIsWhite)
+                            else:
+                                continueGameChoice(
+                                    WINDOW, fpsClock, FPS, "pat", colorIsWhite)
                 if chessEvent == "Promotion":
                     board.arrayBoard[row][col] = getPromotion(
                         WINDOW, fpsClock, FPS, board.arrayBoard[row][col].isWhite())
                     chessEvent = None
+
                 p.display.update()
                 fpsClock.tick(FPS)
 
@@ -246,6 +296,47 @@ def roqueSituation(board, clickPosition):
             if board.arrayBoard[clickPosition[0]][clickPosition[1]].isWhite() == board.arrayBoard[board.selectedPosition[0]][board.selectedPosition[1]].isWhite():
                 return True
     return False
+
+
+def checkmateSituation(board, colorPatIsWhite):
+    for row in range(8):
+        for col in range(8):
+            piece = board.arrayBoard[row][col]
+            if piece != None and piece.isWhite() != colorPatIsWhite:
+                board.getAvailableMove((row, col))
+                print(piece.type+"#########")
+                for move in piece.availableMove:
+                    movePiece = board.arrayBoard[move[0]][move[1]]
+                    if movePiece != None and movePiece.type[1] == "K":
+                        return True
+    return False
+
+
+def patSituation(board):
+    moveWhite, moveBlack = False, False
+    for row in range(8):
+        for col in range(8):
+            piece = board.arrayBoard[row][col]
+            if piece != None:
+                if (moveWhite, moveBlack) == (True, True):
+                    return False, None
+                whitePiece = piece.isWhite()
+                if not moveWhite and whitePiece:
+                    board.getAvailableMove((row, col))
+                    if piece.availableMove != []:
+                        moveWhite = True
+                        print("Move blanc:"+piece.type)
+                if not moveBlack and not whitePiece:
+                    board.getAvailableMove((row, col))
+                    if piece.availableMove != []:
+                        moveBlack = True
+                        print("Move black:"+piece.type, end="")
+                        print("avec comme move", end="")
+                        print(piece.availableMove)
+    if not moveWhite:
+        return True, True
+    else:
+        return True, False
 
 
 def draw_moves(arrayBoard, selectedPosition, window):
