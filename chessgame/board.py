@@ -1,3 +1,4 @@
+from operator import ne
 from .constants import COLS
 from .piece import Rock, Knight, Bishop, Queen, King, Pawn
 
@@ -341,6 +342,12 @@ class Board():
                         ][pastPosition[1]].undoEnPassantMoved(pieceState)
         self.arrayBoard[pastAtePosition[0]
                         ][pastAtePosition[1]].undoEnPassantAte(pieceAteState)
+
+    def switchColor(self):
+        self.whiteBottom = not self.whiteBottom
+        self.arrayBoard.reverse()
+        for row in self.arrayBoard:
+            row.reverse()
 
 
 def createPieceByType(type):

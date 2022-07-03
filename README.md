@@ -1,2 +1,2 @@
 # python-chess-game
-Chess game in full python with customizable graphical interface (colors &amp; pieces)
+In this version of the game, each player plays one after the other. So you can easily play with a friend. The board changes direction after each turn.

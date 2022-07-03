@@ -237,6 +237,8 @@ def game(WINDOW, fpsClock, FPS, IMAGES, humanColorIsWhite):
                             else:
                                 continueGameChoice(
                                     WINDOW, fpsClock, FPS, "pat", colorIsWhite)
+                        board.switchColor()
+
                 if chessEvent == "Promotion":
                     board.arrayBoard[row][col] = getPromotion(
                         WINDOW, fpsClock, FPS, board.arrayBoard[row][col].isWhite())
