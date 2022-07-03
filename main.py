@@ -114,33 +114,26 @@ def getPromotion(WINDOW, fpsClock, FPS, isWhitePiece):
 
 
 def continueGameChoice(WINDOW, fpsClock, FPS, result, colorIsWhite):
-    if colorIsWhite:
-        typeFirstLetter = "w"
+    if result == "pat":
+        text = "Match nul sur pat\n"\
+            "Tapez sur ENTER pour rejouer\n"
     else:
-        typeFirstLetter = "b"
+        if colorIsWhite:
+            text = "Les Noirs ont gagnés\n"\
+                "Tapez sur ENTER pour rejouer\n"
+        else:
+            text = "Les Blancs ont gagnés\n"\
+                "Tapez sur RETURN pour rejouer\n"
     font = p.font.Font('freesansbold.ttf', 32)
-    text = "Choisissez votre Promotion\n"\
-        "Tapez sur D pour choisir une Dame\n"\
-        "Tapez sur T pour choisir une Tour\n"\
-        "Tapez sur F pour choisir un Fou\n"\
-        "Tapez sur C pour choisir un Cavalier"
     WINDOW.fill(BACKGROUND_COLOR)
     blit_text(WINDOW, text, (X_POSITION, Y_POSITION), font, TEXT_COLOR)
     while True:
-        # WINDOW.fill(BACKGROUND_COLOR)
-        #blit_text(WINDOW, text, (X_POSITION, Y_POSITION), font, TEXT_COLOR)
         for event in p.event.get():
             if event.type == p.QUIT:
                 p.quit()
             elif event.type == p.KEYDOWN:
-                if event.key == p.K_d:
-                    return createPieceByType(typeFirstLetter+"Q")
-                if event.key == p.K_t:
-                    return createPieceByType(typeFirstLetter+"R")
-                if event.key == p.K_f:
-                    return createPieceByType(typeFirstLetter+"B")
-                if event.key == p.K_c:
-                    return createPieceByType(typeFirstLetter+"N")
+                if event.key == p.K_RETURN:
+                    game(WINDOW, fpsClock, FPS, IMAGES, humanColorIsWhite)
             p.display.update()
             fpsClock.tick(FPS)
 
@@ -173,7 +166,7 @@ def game(WINDOW, fpsClock, FPS, IMAGES, humanColorIsWhite):
         WINDOW.fill(BACKGROUND_COLOR)
         draw_squares(WINDOW)
         # ajouter "and humanTour" ne plus avoir les actions de l'engine
-        if board.selectedPosition != None and humanTour:
+        if board.selectedPosition != None:
             draw_moves(board.arrayBoard, board.selectedPosition, WINDOW)
         drawPieces(WINDOW, board.arrayBoard)
         # si c'est le tour de l'Humain|mettre humanTour à la place du True
@@ -183,7 +176,8 @@ def game(WINDOW, fpsClock, FPS, IMAGES, humanColorIsWhite):
                 if event.type == p.QUIT:
                     p.quit()
                 # si click gauche
-                if p.mouse.get_pressed()[0] and humanTour:
+                # ajouter and humanTour pour ne pas pouvoir bouger pièce couleur opposée
+                if p.mouse.get_pressed()[0]:
                     location = p.mouse.get_pos()
                     row, col = get_position(location)
                     # si la case est vide
@@ -234,15 +228,10 @@ def game(WINDOW, fpsClock, FPS, IMAGES, humanColorIsWhite):
                                     board.selectedPosition)
                     # si bougé on vérifie échec et mat
                     if move:
-                        print("Une pièce bougée")
                         pat, colorIsWhite = patSituation(board)
                         if pat:
-                            print("il y a pat:", end="")
-                            print(" et c'est la couleure blache:" +
-                                  str(colorIsWhite))
                             checkmate = checkmateSituation(board, colorIsWhite)
                             if checkmate:
-                                print("il y a échec et mat,en plus du pat")
                                 continueGameChoice(
                                     WINDOW, fpsClock, FPS, "checkmate", colorIsWhite)
                             else:
@@ -263,7 +252,6 @@ def game(WINDOW, fpsClock, FPS, IMAGES, humanColorIsWhite):
 def enPassantSituation(board, clickPosition):
     # si est un pion sélectionné
     if board.arrayBoard[board.selectedPosition[0]][board.selectedPosition[1]].type[1] == "P":
-        print("est un pion sélectionné")
         # si blanc en bas et piece blanche ou si noir en bas et piece noir
         if board.arrayBoard[board.selectedPosition[0]][board.selectedPosition[1]].isWhite() == board.whiteBottom:
             # si colonne supérieure à 0
@@ -304,7 +292,6 @@ def checkmateSituation(board, colorPatIsWhite):
             piece = board.arrayBoard[row][col]
             if piece != None and piece.isWhite() != colorPatIsWhite:
                 board.getAvailableMove((row, col))
-                print(piece.type+"#########")
                 for move in piece.availableMove:
                     movePiece = board.arrayBoard[move[0]][move[1]]
                     if movePiece != None and movePiece.type[1] == "K":
@@ -325,14 +312,10 @@ def patSituation(board):
                     board.getAvailableMove((row, col))
                     if piece.availableMove != []:
                         moveWhite = True
-                        print("Move blanc:"+piece.type)
                 if not moveBlack and not whitePiece:
                     board.getAvailableMove((row, col))
                     if piece.availableMove != []:
                         moveBlack = True
-                        print("Move black:"+piece.type, end="")
-                        print("avec comme move", end="")
-                        print(piece.availableMove)
     if not moveWhite:
         return True, True
     else:
