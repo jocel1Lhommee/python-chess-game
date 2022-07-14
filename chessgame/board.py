@@ -39,9 +39,6 @@ class Board():
                       Bishop("wB"),
                       Knight("wN"),
                       Rock("wR")]
-            for i in range(COLS):
-                wP_line.append(Pawn("wP"))
-                bP_line.append(Pawn("bP"))
             self.arrayBoard = [
                 B_line,
                 bP_line,
