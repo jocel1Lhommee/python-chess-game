@@ -13,7 +13,7 @@ class Board():
         self.moveLog = []
         self.whiteBottom = whiteBottom
         self.createBoard()
-
+    
     def createBoard(self):
         wP_line = []
         bP_line = []
@@ -38,9 +38,6 @@ class Board():
                       Bishop("wB"),
                       Knight("wN"),
                       Rock("wR")]
-            for i in range(COLS):
-                wP_line.append(Pawn("wP"))
-                bP_line.append(Pawn("bP"))
             self.arrayBoard = [
                 B_line,
                 bP_line,
@@ -79,6 +76,20 @@ class Board():
                 B_line,
             ]
         # self.init_available_moves()
+
+    def __str__(self):
+        string=""
+        for i,row in enumerate(self.arrayBoard):
+            string+="ligne"+str(i)+":["
+            for j,piece in enumerate(row):
+                if piece!=None:
+                    string+="col"+str(j)+":"+piece.getType()+","
+                else:
+                    string+="col"+str(j)+":Rien,"
+                if j==7:
+                    string=string[:-1]
+                    string+="]\n"
+        return string
 
     def getAvailableMove(self, position, filterCheck=True):
         self.arrayBoard[position[0]][position[1]

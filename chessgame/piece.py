@@ -3,6 +3,9 @@ class Piece:
         self.type = type
         self.availableMove = []
 
+    def getType(self):
+        return self.type
+
     def isWhite(self):
         if self.type[0] == 'w':
             return True
